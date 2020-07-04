@@ -2,7 +2,6 @@ import React from 'react'
 import { withGoogleMap, GoogleMap, withScriptjs, InfoWindow, Marker } from "react-google-maps";
 import Autocomplete from 'react-google-autocomplete';
 import Geocode from "react-geocode";
-import SearchBox from "react-google-maps/lib/components/places/SearchBox";
 
 Geocode.setApiKey("AIzaSyC-pWnGfAfu6iNwSC6wkhgCLmpt7Wwx1ug");
 Geocode.enableDebug();
@@ -13,7 +12,6 @@ class Map extends React.Component {
         this.state = {
             address: '',
             city: '',
-            area: '',
             state: '',
             mapPosition: {
                 lat: this.props.center.lat,
@@ -35,14 +33,12 @@ class Map extends React.Component {
                 const address = response.results[0].formatted_address,
                     addressArray = response.results[0].address_components,
                     city = this.getCity(addressArray),
-                    area = this.getArea(addressArray),
                     state = this.getState(addressArray);
 
-                console.log('city', city, area, state);
+                console.log('city', city, state);
 
                 this.setState({
                     address: (address) ? address : '',
-                    area: (area) ? area : '',
                     city: (city) ? city : '',
                     state: (state) ? state : '',
                 })
@@ -65,7 +61,6 @@ class Map extends React.Component {
             this.state.markerPosition.lat !== this.props.center.lat ||
             this.state.address !== nextState.address ||
             this.state.city !== nextState.city ||
-            this.state.area !== nextState.area ||
             this.state.state !== nextState.state
         ) {
             return true
@@ -83,29 +78,9 @@ class Map extends React.Component {
     getCity = (addressArray) => {
         let city = '';
         for (let i = 0; i < addressArray.length; i++) {
-            if (addressArray[i].types[0] && 'administrative_area_level_2' === addressArray[i].types[0]) {
+            if (addressArray[i].types[0] && 'locality' === addressArray[i].types[0]) {
                 city = addressArray[i].long_name;
                 return city;
-            }
-        }
-    };
-
-    /**
-    * Get the area and set the area input value to the one selected
-    *
-    * @param addressArray
-    * @return {string}
-    */
-    getArea = (addressArray) => {
-        let area = '';
-        for (let i = 0; i < addressArray.length; i++) {
-            if (addressArray[i].types[0]) {
-                for (let j = 0; j < addressArray[i].types.length; j++) {
-                    if ('sublocality_level_1' === addressArray[i].types[j] || 'locality' === addressArray[i].types[j]) {
-                        area = addressArray[i].long_name;
-                        return area;
-                    }
-                }
             }
         }
     };
@@ -149,13 +124,11 @@ class Map extends React.Component {
         const address = place.formatted_address,
             addressArray = place.address_components,
             city = this.getCity(addressArray),
-            area = this.getArea(addressArray),
             state = this.getState(addressArray),
             latValue = place.geometry.location.lat(),
             lngValue = place.geometry.location.lng();// Set these values in the state.
         this.setState({
             address: (address) ? address : '',
-            area: (area) ? area : '',
             city: (city) ? city : '',
             state: (state) ? state : '',
             markerPosition: {
@@ -185,10 +158,8 @@ class Map extends React.Component {
                     const address = response.results[0].formatted_address,
                         addressArray = response.results[0].address_components,
                         city = this.getCity(addressArray),
-                        area = this.getArea(addressArray),
                         state = this.getState(addressArray); this.setState({
                             address: (address) ? address : '',
-                            area: (area) ? area : '',
                             city: (city) ? city : '',
                             state: (state) ? state : ''
                         })
@@ -217,7 +188,7 @@ class Map extends React.Component {
                                 marginBottom: '100px'
                             }}
                             onPlaceSelected={this.onPlaceSelected}
-                            //types={['(address)']}
+                            types={['address']}
                             key='AIzaSyC-pWnGfAfu6iNwSC6wkhgCLmpt7Wwx1ug'
                         />
                         {/*Marker*/}
@@ -245,10 +216,6 @@ class Map extends React.Component {
                     <div className="form-group">
                         <label htmlFor="">City</label>
                         <input type="text" name="city" className="form-control" onChange={this.onChange} readOnly="readOnly" value={this.state.city} />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="">Area</label>
-                        <input type="text" name="area" className="form-control" onChange={this.onChange} readOnly="readOnly" value={this.state.area} />
                     </div>
                     <div className="form-group">
                         <label htmlFor="">State</label>
