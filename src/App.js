@@ -9,7 +9,7 @@ function App(props) {
      google={props.google}
      center={{lat: 41.1504665, lng: -74.0074635}}
      height='300px'
-     zoom={15}
+     zoom={5}
     />
   );
 }
