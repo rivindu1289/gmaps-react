@@ -8,8 +8,8 @@ function App(props) {
     <Map
      google={props.google}
      center={{lat: 41.1504665, lng: -74.0074635}}
-     height='300px'
-     zoom={5}
+     height='75vh'
+     zoom={6}
     />
   );
 }
