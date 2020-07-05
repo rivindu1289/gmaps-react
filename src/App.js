@@ -7,7 +7,7 @@ function App(props) {
   return (
     <Map
      google={props.google}
-     center={{lat: 41.1504665, lng: -74.0074635}}
+     center={{lat: 39.768696, lng: -101.446397}}
      height='75vh'
      zoom={6}
     />
