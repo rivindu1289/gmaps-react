@@ -2,6 +2,7 @@ import React from 'react'
 import { withGoogleMap, GoogleMap, withScriptjs, InfoWindow, Marker } from "react-google-maps";
 import Autocomplete from 'react-google-autocomplete';
 import Geocode from "react-geocode";
+import stData from './states.json';
 
 Geocode.setApiKey("AIzaSyC-pWnGfAfu6iNwSC6wkhgCLmpt7Wwx1ug");
 Geocode.enableDebug();
@@ -17,11 +18,10 @@ class Map extends React.Component {
                 lat: this.props.center.lat,
                 lng: this.props.center.lng
             },
-            markerPosition: {
-                lat: this.props.center.lat,
-                lng: this.props.center.lng
-            }
-        }
+            markers: [],
+            stObj: JSON.parse(JSON.stringify(stData)),
+            ml: 0
+        };
     }
 
     /**
@@ -58,10 +58,7 @@ class Map extends React.Component {
     */
     shouldComponentUpdate(nextProps, nextState) {
         if (
-            this.state.markerPosition.lat !== this.props.center.lat ||
-            this.state.address !== nextState.address ||
-            this.state.city !== nextState.city ||
-            this.state.state !== nextState.state
+            (nextState.markers.length === nextState.ml)
         ) {
             return true
         } else if (this.props.center.lat === nextProps.center.lat) {
@@ -116,7 +113,9 @@ class Map extends React.Component {
     *
     * @param event
     */
-    onInfoWindowClose = (event) => { };/**
+    onInfoWindowClose = (event) => { };
+    
+    /**
     * When the user types an address in the search box
     * @param place
     */
@@ -127,50 +126,56 @@ class Map extends React.Component {
             state = this.getState(addressArray),
             latValue = place.geometry.location.lat(),
             lngValue = place.geometry.location.lng();// Set these values in the state.
+
+        let m = [];
+        let st = this.state.stObj[state];
+        fetch("https://covid-19-testing.github.io/locations/"+String(st)+"/complete.json")
+            .then(response => response.json())
+            .then(jsonData => {
+                this.setState({
+                    markers:[],
+                    ml: jsonData.length
+                });
+                for (var i = 0; i < jsonData.length; i++){
+                    let obj = jsonData[i];
+                    let addData = obj.physical_address[0];
+                    let add = addData.address_1 + " " + addData.city + " " + addData.state_province + " " + addData.postal_code;
+
+                    Geocode.fromAddress(add)
+                        .then(response => {
+                            let lat1 = response.results[0].geometry.location.lat,
+                                lng1 = response.results[0].geometry.location.lng;
+                                
+                            m[m.length] = {lat:lat1, lng:lng1, address:add, name:obj.name};
+                            this.setState({
+                                markers:m,
+                            });
+                        },
+                        error => {
+                            console.error(error);
+                        });
+                }
+            });
         this.setState({
             address: (address) ? address : '',
             city: (city) ? city : '',
             state: (state) ? state : '',
-            markerPosition: {
-                lat: latValue,
-                lng: lngValue
-            },
             mapPosition: {
                 lat: latValue,
                 lng: lngValue
             },
-        })
-    };
-
-    /**
-    * When the marker is dragged you get the lat and long using the functions available from event object.
-    * Use geocode to get the address, city, area and state from the lat and lng positions.
-    * And then set those values in the state.
-    *
-    * @param event
-    */
-    onMarkerDragEnd = (event) => {
-        console.log('event', event);
-        let newLat = event.latLng.lat(),
-            newLng = event.latLng.lng(),
-            addressArray = []; Geocode.fromLatLng(newLat, newLng).then(
-                response => {
-                    const address = response.results[0].formatted_address,
-                        addressArray = response.results[0].address_components,
-                        city = this.getCity(addressArray),
-                        state = this.getState(addressArray); this.setState({
-                            address: (address) ? address : '',
-                            city: (city) ? city : '',
-                            state: (state) ? state : ''
-                        })
-                },
-                error => {
-                    console.error(error);
-                }
-            );
+        });
     };
 
     render() {
+        let mk = [];
+        for (var loc of this.state.markers){
+            mk[mk.length] = <Marker google={this.props.google}
+                                        name={loc.name}
+                                        draggable={false}
+                                        position={{ lat: Number(loc.lat), lng: Number(loc.lng) }}
+                                    />;
+        }
         const AsyncMap = withScriptjs(
             withGoogleMap(
                 props => (
@@ -192,21 +197,8 @@ class Map extends React.Component {
                             key='AIzaSyC-pWnGfAfu6iNwSC6wkhgCLmpt7Wwx1ug'
                         />
                         {/*Marker*/}
-                        <Marker google={this.props.google}
-                            name={'Dolores park'}
-                            draggable={true}
-                            onDragEnd={this.onMarkerDragEnd}
-                            position={{ lat: this.state.markerPosition.lat, lng: this.state.markerPosition.lng }}
-                        />
-                        <Marker />{/* InfoWindow on top of marker */}
-                        <InfoWindow
-                            onClose={this.onInfoWindowClose}
-                            position={{ lat: (this.state.markerPosition.lat + 0.0018), lng: this.state.markerPosition.lng }}
-                        >
-                            <div>
-                                <span style={{ padding: 0, margin: 0 }}>{this.state.address}</span>
-                            </div>
-                        </InfoWindow></GoogleMap>)
+                        {mk}
+                        </GoogleMap>)
             )
         );
         let map;
@@ -214,7 +206,7 @@ class Map extends React.Component {
             map = <div>
                 <div>
                     <div className="form-group">
-                        <label htmlFor="">City</label>
+                    <label htmlFor="">City</label>
                         <input type="text" name="city" className="form-control" onChange={this.onChange} readOnly="readOnly" value={this.state.city} />
                     </div>
                     <div className="form-group">
