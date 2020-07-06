@@ -1,3 +1,18 @@
+# Google Maps Covid Testing Sites
+
+This react project takes in a user's address (US only), then for that address displays the COVID-19 testing sites in their state on a google maps.
+Warning: To use this project, you must use your own Google Maps API Key. My key in the code will not work. Replace all instances of my key in Map.js with your own key.
+
+### npm packages used
+- [react-google-maps](https://www.npmjs.com/package/react-google-maps)
+- [react-google-autocomplete](https://www.npmjs.com/package/react-google-autocomplete)
+- [react-geocode](https://www.npmjs.com/package/react-geocode)
+
+### API's and sources
+- [Google Maps API's](https://developers.google.com/maps/documentation/javascript/tutorial)
+- [Postman COVID-19 Testing Locations API](https://covid-19-apis.postman.com/covid-19-testing-locations/)
+- [Project used as starter point](https://medium.com/@imranhsayed/google-maps-in-react-autocomplete-location-search-draggable-marker-marker-infobox-565ab8e8cf22)
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
