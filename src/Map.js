@@ -4,7 +4,9 @@ import Autocomplete from 'react-google-autocomplete';
 import Geocode from "react-geocode";
 import stData from './states.json';
 
-Geocode.setApiKey("AIzaSyC-pWnGfAfu6iNwSC6wkhgCLmpt7Wwx1ug");
+const apiKey = "AIzaSyC-pWnGfAfu6iNwSC6wkhgCLmpt7Wwx1ug"; // PUT YOUR API KEY HERE
+
+Geocode.setApiKey(apiKey);
 Geocode.enableDebug();
 
 class Map extends React.Component {
@@ -194,7 +196,7 @@ class Map extends React.Component {
                             }}
                             onPlaceSelected={this.onPlaceSelected}
                             types={['address']}
-                            key='AIzaSyC-pWnGfAfu6iNwSC6wkhgCLmpt7Wwx1ug'
+                            key = {apiKey}  
                         />
                         {/*Marker*/}
                         {mk}
@@ -219,7 +221,7 @@ class Map extends React.Component {
                     </div>
                 </div>
                 <AsyncMap
-                    googleMapURL="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-pWnGfAfu6iNwSC6wkhgCLmpt7Wwx1ug&libraries=places"
+                    googleMapURL={"https://maps.googleapis.com/maps/api/js?key=" + apiKey + "&libraries=places"}
                     loadingElement={
                         <div style={{ height: `100%` }} />
                     }
